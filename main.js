@@ -6,12 +6,17 @@ canvas.width = 700;
 canvas.height = 600;
 
 // Variables
+const mouse = {
+    x: undefined,
+    y: undefined
+}
+
 const playerX = canvas.width / 2;
 const playerY = canvas.height / 2;
 const playerRadius = 10;
 const playerColor = '#FAEDF0';
 
-const missileVelocity = 3;
+const missileVelocity = 10;
 const missileRadius = 5;
 const missilesColors =  [
     '#CF0A0A',
@@ -58,13 +63,12 @@ class Missile {
         this.radius = radius;
         this.color = color;
 
-        this.angle = Math.random() * 360;
-        console.log(this.angle);
+        this.distX = mouse.x - player.x;
+        this.distY = mouse.y - player.y;
 
-        this.dx = Math.cos(this.angle) * this.velocity;
-        this.dy = Math.sin(this.angle) * this.velocity;
+        this.dx = (this.distX / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
+        this.dy = (this.distY / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
 
-        console.log(Math.pow(this.velocity, 2), Math.pow(this.dx, 2)+ Math.pow(this.dy, 2))
     }
 
     draw = function() {
@@ -83,19 +87,43 @@ class Missile {
     }
 }
 
-const player = new Player(playerX, playerY, playerRadius, playerColor);
+// Implementation
 
-const missile = new Missile(playerX, playerY, missileVelocity, missileRadius, playerColor);
+let player;
+let missiles = [];
+
+function init() {
+    player = new Player(playerX, playerY, playerRadius, playerColor)
+}
+
+
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
     
-    ctx.fillStyle = 'rgba(16, 24, 34, 0.35';
+    ctx.fillStyle = 'rgba(16, 24, 34, 0.45';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     player.update();
-    missile.update();
+
+    missiles.forEach(missile => {
+        missile.update();
+    })
+    // missile.update();
 }
 
+// Event listeners
+canvas.addEventListener('mousemove', e => {
+    mouse.x = e.clientX - canvas.offsetLeft
+    mouse.y = e.clientY - canvas.offsetTop;
+    console.log(mouse)
+})
+
+canvas.addEventListener('click', () => {
+    const missile = new Missile(playerX, playerY, missileVelocity, missileRadius, playerColor)
+    missiles.push(missile);
+})
+
+init();
 animate();
