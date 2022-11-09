@@ -13,12 +13,17 @@ const mouse = {
 
 const playerX = canvas.width / 2;
 const playerY = canvas.height / 2;
-const playerRadius = 10;
+const playerRadius = 12;
 const playerColor = '#FAEDF0';
 
 const missileVelocity = 10;
-const missileRadius = 5;
-const missilesColors =  [
+const missileRadius = 3.5;
+
+const enemyMinVelocity = 1;
+const enemyMaxVelocity = 1;
+const enemyMinRadius = 10;
+const enemyMaxRadius = 20;
+const enemiesColors =  [
     '#CF0A0A',
     '#00ABB3',
     '#5C2E7E',
@@ -26,10 +31,16 @@ const missilesColors =  [
 ]
 
 // Utility functions
-// function getRandomIntFromRange
+function randomIntFromRange(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
 
 function getRandomColor(color) {
     return color[Math.floor(Math.random() * color.length)];
+}
+
+function getDistanceBetweenCircles(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
 
 // Classes
@@ -66,9 +77,8 @@ class Missile {
         this.distX = mouse.x - player.x;
         this.distY = mouse.y - player.y;
 
-        this.dx = (this.distX / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
-        this.dy = (this.distY / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
-
+        this.velocityX = (this.distX / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
+        this.velocityY = (this.distY / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
     }
 
     draw = function() {
@@ -81,8 +91,38 @@ class Missile {
 
     update = function() {
 
-        this.y += this.dy;
-        this.x += this.dx;
+        this.y += this.velocityY;
+        this.x += this.velocityX;
+        this.draw();
+    }
+}
+
+class Enemy {
+    constructor(x, y, velocity, radius, color) {
+        this.x = x;
+        this.y = y;
+        this.velocity = velocity;
+        this.radius = radius;
+        this.color = color;
+
+        this.distX = this.x - player.x;
+        this.distY = this.y - player.y;
+        
+        this.velocityX = -(this.distX / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
+        this.velocityY = -(this.distY / (Math.sqrt(Math.pow(this.distY, 2) + Math.pow(this.distX, 2)))) * this.velocity;
+    }
+
+    draw = function() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    update = function() {
+        this.y += this.velocityY;
+        this.x += this.velocityX;
         this.draw();
     }
 }
@@ -91,11 +131,27 @@ class Missile {
 
 let player;
 let missiles = [];
+let enemies = [];
 
 function init() {
-    player = new Player(playerX, playerY, playerRadius, playerColor)
-}
+    player = new Player(playerX, playerY, playerRadius, playerColor);
 
+    for (let i = 0; i < 5; i++) {
+        let enemyX;
+        let enemyY;
+        const velocity = randomIntFromRange(enemyMinVelocity, enemyMaxVelocity);
+        const radius = randomIntFromRange(enemyMinRadius, enemyMaxRadius);
+        const color = getRandomColor(enemiesColors);
+        do {
+            enemyX = Math.random() * canvas.width;
+            enemyY = Math.random() * canvas.height;
+        }
+        while (getDistanceBetweenCircles(enemyX, enemyY, playerX, playerY) < 250)
+
+        const enemy = new Enemy(enemyX, enemyY, velocity, radius, color);
+        enemies.push(enemy);
+    }
+}
 
 
 // Animation loop
@@ -110,14 +166,16 @@ function animate() {
     missiles.forEach(missile => {
         missile.update();
     })
-    // missile.update();
+
+    enemies.forEach(enemy => {
+        enemy.update();
+    })
 }
 
 // Event listeners
 canvas.addEventListener('mousemove', e => {
     mouse.x = e.clientX - canvas.offsetLeft
     mouse.y = e.clientY - canvas.offsetTop;
-    console.log(mouse)
 })
 
 canvas.addEventListener('click', () => {
