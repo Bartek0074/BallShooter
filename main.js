@@ -27,7 +27,8 @@ const enemiesColors =  [
     '#CF0A0A',
     '#00ABB3',
     '#5C2E7E',
-    '#1A4D2E'
+    '#1A4D2E',
+    '#FF9F29'
 ]
 
 // Utility functions
@@ -135,40 +136,59 @@ let enemies = [];
 
 function init() {
     player = new Player(playerX, playerY, playerRadius, playerColor);
+}
 
-    for (let i = 0; i < 5; i++) {
+function spawnEnemies() {
+    setInterval(() => {
+        const radius = randomIntFromRange(enemyMinRadius, enemyMaxRadius);
         let enemyX;
         let enemyY;
-        const velocity = randomIntFromRange(enemyMinVelocity, enemyMaxVelocity);
-        const radius = randomIntFromRange(enemyMinRadius, enemyMaxRadius);
-        const color = getRandomColor(enemiesColors);
-        do {
-            enemyX = Math.random() * canvas.width;
+
+        if (Math.random() < 0.5) {
+            enemyX = Math.random() < 0.5 ? 0 - radius : canvas.width + radius;
             enemyY = Math.random() * canvas.height;
         }
-        while (getDistanceBetweenCircles(enemyX, enemyY, playerX, playerY) < 250)
+        else {
+            enemyX = Math.random() * canvas.width;
+            enemyY = Math.random() < 0.5 ? 0 - radius : canvas.height + radius;
+        }
+
+        const velocity = randomIntFromRange(enemyMinVelocity, enemyMaxVelocity);
+        const color = getRandomColor(enemiesColors);
 
         const enemy = new Enemy(enemyX, enemyY, velocity, radius, color);
         enemies.push(enemy);
-    }
+
+    }, 1000)
 }
 
-
 // Animation loop
+let animationId;
 function animate() {
-    requestAnimationFrame(animate);
+    animationId = requestAnimationFrame(animate);
     
     ctx.fillStyle = 'rgba(16, 24, 34, 0.45';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     player.update();
 
-    missiles.forEach(missile => {
+    missiles.forEach((missile, missileIndex) => {
         missile.update();
+
+        enemies.forEach((enemy, enemyIndex) => {
+            if (getDistanceBetweenCircles(missile.x, missile.y, enemy.x, enemy.y) <= missile.radius + enemy.radius) {
+                missiles.splice(missileIndex, 1);
+                enemies.splice(enemyIndex, 1);
+            }
+        })
     })
 
     enemies.forEach(enemy => {
         enemy.update();
+
+        if (getDistanceBetweenCircles(enemy.x, enemy.y, player.x, player.y) <= enemy.radius + player.radius) {
+            cancelAnimationFrame(animationId);
+        }
     })
 }
 
@@ -184,4 +204,5 @@ canvas.addEventListener('click', () => {
 })
 
 init();
+spawnEnemies();
 animate();
