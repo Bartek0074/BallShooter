@@ -5,11 +5,15 @@ const ctx = canvas.getContext('2d');
 canvas.width = 700;
 canvas.height = 600;
 
+// Importing DOM elements
+const scoreValue = document.querySelector('.score__value')
+
 // Variables
 const mouse = {
     x: undefined,
     y: undefined
 }
+let score = 0;
 
 const playerX = canvas.width / 2;
 const playerY = canvas.height / 2;
@@ -249,8 +253,8 @@ function animate() {
         enemies.forEach((enemy, enemyIndex) => {
             if (getDistanceBetweenCircles(missile.x, missile.y, enemy.x, enemy.y) <= missile.radius + enemy.radius) {
                 
+                // boom efect
                 const numberOfParticles = randomIntFromRange(10, 20);
-
                 for (let i = 0; i < numberOfParticles; i++) {
                     const particleVelocity = randomNumberFromRange(0.75, 6) * enemy.velocity;
                     const particleRadius = randomNumberFromRange(0.03, 0.15) * enemy.radius;
@@ -258,11 +262,19 @@ function animate() {
                     particles.push(particle);
                 }
                 
+                // shrinking or removing enemy from array
                 missiles.splice(missileIndex, 1);
                 if (enemy.radius > 17) {
                     enemy.radius -= 10;
+                    score += 100;
                 }
-                else enemies.splice(enemyIndex, 1);
+                else {
+                    enemies.splice(enemyIndex, 1);
+                    score += 250;
+                }
+
+                // updating score
+                scoreValue.textContent = score;
             }
         })
     })
