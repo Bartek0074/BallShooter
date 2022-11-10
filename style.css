@@ -20,6 +20,11 @@ body {
     background-color: #888;
 }
 
+.game {
+    width: 700px;
+    height: 600px;
+}
+
 .score {
     position: fixed;
     margin: .4em .8em;
@@ -27,6 +32,50 @@ body {
     color: #FAEDF0;
 }
 
+.game-over-box {
+    position: fixed;
+    display: fixed;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 2em;
+    border-radius: 10px;
+    background-color: #FAEDF0;
+    color: #101822;
+}
+
+.game-over-box h3 {
+    margin-bottom: 0.5em;
+    text-align: center;
+    font-size: 4.2rem;
+}
+
+.game-over-box p {
+    font-size: 2.2rem;
+    margin: 0.5em 0;
+}
+
+.game-over-box button {
+    font-size: 2.2rem;
+    width: 100%;
+    margin-top: 0.5em;
+    text-transform: uppercase;
+    background-color: #1A554F;
+    padding: .5em 0;
+    border: none;
+    border-radius: 10px;
+    color: #FAEDF0;
+    cursor: pointer;
+    transition: background-color .3s;
+}
+.game-over-box button:hover {
+    background-color: #206760;
+}
+
 canvas {
-    background-color: rgb(16, 24, 34);
+    background-color: #101822;
 }

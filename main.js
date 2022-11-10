@@ -6,7 +6,10 @@ canvas.width = 700;
 canvas.height = 600;
 
 // Importing DOM elements
-const scoreValue = document.querySelector('.score__value')
+const scoreValue = document.querySelector('.score__value');
+const gameOverBox = document.querySelector('.game-over-box');
+const gameOverTextBox = document.querySelector('.game-over-text-box');
+const startGameBtn = document.querySelector('.start-game-btn');
 
 // Variables
 const mouse = {
@@ -20,7 +23,7 @@ const playerY = canvas.height / 2;
 const playerRadius = 12;
 const playerColor = '#FAEDF0';
 
-const missileVelocity = 5;
+const missileVelocity = 7.5;
 const missileRadius = 3.5;
 
 const enemyMinVelocity = 1;
@@ -169,7 +172,7 @@ class Particle {
         this.x += this.velocityX;
         this.y += this.velocityY;
 
-        this.alpha -= 0.01;
+        this.alpha -= 0.005;
 
         this.velocity = Math.sqrt(Math.pow(this.velocityX, 2) + Math.pow(this.velocityY, 2));
 
@@ -194,11 +197,17 @@ let enemies = [];
 let particles = [];
 
 function init() {
+    missiles = [];
+    enemies = [];
+    particles = [];
     player = new Player(playerX, playerY, playerRadius, playerColor);
+    score = 0;
+    scoreValue.textContent = score;
 }
 
+let spawnEnemiesInterval;
 function spawnEnemies() {
-    setInterval(() => {
+    spawnEnemiesInterval = setInterval(() => {
         const radius = randomIntFromRange(enemyMinRadius, enemyMaxRadius);
         let enemyX;
         let enemyY;
@@ -254,7 +263,7 @@ function animate() {
             if (getDistanceBetweenCircles(missile.x, missile.y, enemy.x, enemy.y) <= missile.radius + enemy.radius) {
                 
                 // boom efect
-                const numberOfParticles = randomIntFromRange(10, 20);
+                const numberOfParticles = randomIntFromRange(20, 50);
                 for (let i = 0; i < numberOfParticles; i++) {
                     const particleVelocity = randomNumberFromRange(0.75, 6) * enemy.velocity;
                     const particleRadius = randomNumberFromRange(0.03, 0.15) * enemy.radius;
@@ -265,7 +274,7 @@ function animate() {
                 // shrinking or removing enemy from array
                 missiles.splice(missileIndex, 1);
                 if (enemy.radius > 17) {
-                    enemy.radius -= 10;
+                    enemy.radius -= 5;
                     score += 100;
                 }
                 else {
@@ -284,6 +293,12 @@ function animate() {
 
         if (getDistanceBetweenCircles(enemy.x, enemy.y, player.x, player.y) <= enemy.radius + player.radius) {
             cancelAnimationFrame(animationId);
+            gameOverTextBox.innerHTML = 
+            `
+            <h3>Game Over</h3>
+            <p>Your score: ${score} points</p>
+            `
+            gameOverBox.style.display = 'flex';
         }
     })
 }
@@ -299,6 +314,17 @@ canvas.addEventListener('click', () => {
     missiles.push(missile);
 })
 
-init();
-spawnEnemies();
-animate();
+window.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+        const missile = new Missile(playerX, playerY, missileVelocity, missileRadius, playerColor)
+        missiles.push(missile);
+    }
+})
+
+startGameBtn.addEventListener('click', () => {
+    init();
+    animate();
+    clearInterval(spawnEnemiesInterval);
+    spawnEnemies();
+    gameOverBox.style.display = 'none';
+})
